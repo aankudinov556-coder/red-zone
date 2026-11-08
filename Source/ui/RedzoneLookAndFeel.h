@@ -74,10 +74,10 @@ public:
         g.setColour (highlighted ? text : textDim);
         g.drawRoundedRectangle (r, 4.0f, 1.0f);
         g.setColour (text);
-        g.setFont (juce::FontOptions (13.0f, juce::Font::bold));
+        g.setFont (juce::Font (13.0f, juce::Font::bold));
         g.drawText (b.getButtonText(), r, juce::Justification::centred);
     }
 
-    juce::Font getLabelFont (juce::Label&) override { return juce::FontOptions (12.0f); }
+    juce::Font getLabelFont (juce::Label&) override { return juce::Font (12.0f); }
 };
 } // namespace rz::ui

@@ -19,6 +19,8 @@ DefaultDirName={autopf}\Redzone
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
+; Windows 8 (6.2) and later
+MinVersion=6.2
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\dist

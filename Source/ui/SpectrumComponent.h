@@ -29,7 +29,7 @@ public:
         const auto area = plotArea();
 
         // grid
-        g.setFont (juce::FontOptions (10.0f));
+        g.setFont (juce::Font (10.0f));
         const float freqs[] = { 50, 100, 200, 500, 1000, 2000, 5000, 10000 };
         for (float f : freqs)
         {

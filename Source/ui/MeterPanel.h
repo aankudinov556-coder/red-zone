@@ -37,7 +37,7 @@ public:
         auto area = getLocalBounds().reduced (12);
         area.removeFromBottom (34);
 
-        g.setFont (juce::FontOptions (11.0f, juce::Font::bold));
+        g.setFont (juce::Font (11.0f, juce::Font::bold));
         g.setColour (accent);
         g.drawText ("LOUDNESS", area.removeFromTop (16), juce::Justification::left);
 
@@ -45,10 +45,10 @@ public:
         {
             auto row = area.removeFromTop (big ? 38 : 22);
             g.setColour (textDim);
-            g.setFont (juce::FontOptions (11.0f));
+            g.setFont (juce::Font (11.0f));
             g.drawText (name, row.removeFromLeft (70), juce::Justification::centredLeft);
             g.setColour (text);
-            g.setFont (juce::FontOptions (big ? 24.0f : 15.0f, juce::Font::bold));
+            g.setFont (juce::Font (big ? 24.0f : 15.0f, juce::Font::bold));
             g.drawText (lufs <= -99.0f ? juce::String ("-inf") : juce::String (lufs, 1), row, juce::Justification::centredRight);
         };
         readout ("Integrated", integrated, true);
@@ -56,13 +56,13 @@ public:
         readout ("Momentary", momentary, false);
         area.removeFromTop (6);
         g.setColour (textDim);
-        g.setFont (juce::FontOptions (10.0f));
+        g.setFont (juce::Font (10.0f));
         g.drawText ("LUFS", area.removeFromTop (12), juce::Justification::centredRight);
         area.removeFromTop (8);
 
         // Peaks
         g.setColour (accent);
-        g.setFont (juce::FontOptions (11.0f, juce::Font::bold));
+        g.setFont (juce::Font (11.0f, juce::Font::bold));
         g.drawText ("PEAK (dBFS)", area.removeFromTop (16), juce::Justification::left);
         drawBar (g, area.removeFromTop (18), "L", peakL, holdL, -60.0f, 0.0f);
         drawBar (g, area.removeFromTop (18), "R", peakR, holdR, -60.0f, 0.0f);
@@ -118,7 +118,7 @@ private:
     {
         using namespace colours;
         g.setColour (textDim);
-        g.setFont (juce::FontOptions (11.0f));
+        g.setFont (juce::Font (11.0f));
         g.drawText (name, row.removeFromLeft (34), juce::Justification::centredLeft);
         auto bar = row.removeFromLeft (row.getWidth() - 44).toFloat().reduced (0.0f, 3.0f);
         g.setColour (panelLight);

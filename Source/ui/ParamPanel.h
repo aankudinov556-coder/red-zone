@@ -67,7 +67,7 @@ public:
         g.fillRoundedRectangle (getLocalBounds().toFloat().reduced (2.0f), 6.0f);
 
         g.setColour (colours::accent);
-        g.setFont (juce::FontOptions (12.0f, juce::Font::bold));
+        g.setFont (juce::Font (12.0f, juce::Font::bold));
         for (size_t r = 0; r < rowTitles.size(); ++r)
             if (r < rowBounds.size())
                 g.drawText (rowTitles[(int) r], rowBounds[r].withWidth (titleWidth).toFloat(), juce::Justification::centred);

@@ -31,6 +31,29 @@ jobs:
           }
           Get-ChildItem -Recurse $vst | Select-Object -ExpandProperty FullName
 
+      - name: Check Windows 8 compatibility (no Win10-only imports)
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $dumpbin = & $vswhere -latest -products * -find "VC\Tools\MSVC\**\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+          if (-not $dumpbin) { throw "dumpbin not found" }
+          # Functions that only exist on Windows 10+; they must never be imported statically.
+          $banned = @('GetSystemMetricsForDpi','GetDpiForWindow','GetDpiForSystem','AdjustWindowRectExForDpi',
+                      'SetThreadDpiAwarenessContext','GetThreadDpiAwarenessContext','GetWindowDpiAwarenessContext',
+                      'GetAwarenessFromDpiAwarenessContext','EnableNonClientDpiScaling','SystemParametersInfoForDpi',
+                      'D2D1CreateFactory1','GetDpiForMonitor')
+          $bins = @("build/Redzone_artefacts/Release/Standalone/Redzone.exe") +
+                  (Get-ChildItem -Recurse "build/Redzone_artefacts/Release/VST3/Redzone.vst3" -Filter *.vst3 -File | ForEach-Object FullName)
+          $fail = $false
+          foreach ($b in $bins) {
+            $imports = & $dumpbin /imports $b | Out-String
+            foreach ($f in $banned) {
+              if ($imports -match "\b$f\b") { Write-Host "::error::$b statically imports $f (Windows 10+ only)"; $fail = $true }
+            }
+            Write-Host "checked $b"
+          }
+          if ($fail) { throw "Binary is not Windows 8 compatible" }
+
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
 

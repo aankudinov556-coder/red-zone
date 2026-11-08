@@ -96,10 +96,10 @@ void RedzoneAudioProcessorEditor::paint (juce::Graphics& g)
 
     auto header = getLocalBounds().removeFromTop (headerH).reduced (14, 0);
     g.setColour (colours::accent);
-    g.setFont (juce::FontOptions (26.0f, juce::Font::bold));
+    g.setFont (juce::Font (26.0f, juce::Font::bold));
     g.drawText ("REDZONE", header.removeFromLeft (150), juce::Justification::centredLeft);
     g.setColour (colours::textDim);
-    g.setFont (juce::FontOptions (12.0f));
+    g.setFont (juce::Font (12.0f));
     g.drawText ("MASTERING SUITE", header.removeFromLeft (200), juce::Justification::centredLeft);
 }
 
