@@ -5,21 +5,8 @@ using namespace rz::ui;
 namespace
 {
     constexpr int headerH = 46;
-    constexpr int spectrumH = 230;
+    constexpr int spectrumH = 256;
     constexpr int meterW = 230;
-
-    ParamPanel* makeEqPanel (juce::AudioProcessorValueTreeState& s)
-    {
-        ControlRow freq, gain, q;
-        for (int b = 1; b <= rz::numEqBands; ++b)
-        {
-            const auto n = juce::String (b);
-            freq.push_back ({ rz::id::eqFreq (b), "Freq " + n });
-            gain.push_back ({ rz::id::eqGain (b), "Gain " + n });
-            q.push_back ({ rz::id::eqQ (b), "Q " + n });
-        }
-        return new ParamPanel (s, rz::id::eqBypass, { freq, gain, q }, { "FREQ", "GAIN", "Q" });
-    }
 
     ParamPanel* makeMultibandPanel (juce::AudioProcessorValueTreeState& s)
     {
@@ -38,17 +25,6 @@ namespace
         return new ParamPanel (s, rz::id::mbBypass, rows, { "XOVER", "LOW", "MID", "HIGH" });
     }
 
-    ParamPanel* makeImagerPanel (juce::AudioProcessorValueTreeState& s)
-    {
-        std::vector<ControlRow> rows;
-        rows.push_back ({ { rz::id::imgX1, "Low / Mid X-over" }, { rz::id::imgX2, "Mid / High X-over" } });
-        rows.push_back ({ { rz::id::imgWidth (1), "Low Width" },
-                          { rz::id::imgWidth (2), "Mid Width" },
-                          { rz::id::imgWidth (3), "High Width" } });
-        rows.push_back ({ { rz::id::imgMonoLow, "MONO LOW BAND", true } });
-        return new ParamPanel (s, rz::id::imgBypass, rows, { "XOVER", "WIDTH", "BASS" });
-    }
-
     ParamPanel* makeMaximizerPanel (juce::AudioProcessorValueTreeState& s)
     {
         std::vector<ControlRow> rows;
@@ -58,20 +34,29 @@ namespace
 } // namespace
 
 RedzoneAudioProcessorEditor::RedzoneAudioProcessorEditor (RedzoneAudioProcessor& p)
-    : AudioProcessorEditor (&p), processor (p), spectrum (p), meters (p)
+    : AudioProcessorEditor (&p), processor (p), eqGraph (p), meters (p)
 {
     setLookAndFeel (&lookAndFeel);
 
-    addAndMakeVisible (spectrum);
+    addAndMakeVisible (eqGraph);
     addAndMakeVisible (meters);
 
     const auto tabColour = colours::background;
     tabs.setTabBarDepth (30);
-    tabs.addTab ("EQ", tabColour, makeEqPanel (p.apvts), true);
+    eqBandPanel = new EqBandPanel (p.apvts);
+    tabs.addTab ("EQ", tabColour, eqBandPanel, true);
     tabs.addTab ("MULTIBAND", tabColour, makeMultibandPanel (p.apvts), true);
-    tabs.addTab ("IMAGER", tabColour, makeImagerPanel (p.apvts), true);
+    tabs.addTab ("IMAGER", tabColour, new ImagerTab (p), true);
     tabs.addTab ("MAXIMIZER", tabColour, makeMaximizerPanel (p.apvts), true);
     addAndMakeVisible (tabs);
+
+    // Selecting a point on the graph shows that band in the EQ tab.
+    eqGraph.onSelectionChanged = [this] (int band)
+    {
+        eqBandPanel->setBand (band);
+        if (band >= 0) tabs.setCurrentTabIndex (0);
+    };
+    eqBandPanel->onDeleteBand = [this] (int band) { eqGraph.deleteBand (band); };
 
     inGainLabel.setText ("INPUT", juce::dontSendNotification);
     inGainLabel.setJustificationType (juce::Justification::centredRight);
@@ -82,7 +67,7 @@ RedzoneAudioProcessorEditor::RedzoneAudioProcessorEditor (RedzoneAudioProcessor&
     addAndMakeVisible (inGainSlider);
     inGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (p.apvts, rz::id::inGain, inGainSlider);
 
-    setSize (1000, 740);
+    setSize (1040, 740);
 }
 
 RedzoneAudioProcessorEditor::~RedzoneAudioProcessorEditor()
@@ -116,7 +101,7 @@ void RedzoneAudioProcessorEditor::resized()
 
     meters.setBounds (area.removeFromRight (meterW));
     area.removeFromRight (8);
-    spectrum.setBounds (area.removeFromTop (spectrumH));
+    eqGraph.setBounds (area.removeFromTop (spectrumH));
     area.removeFromTop (8);
     tabs.setBounds (area);
 }

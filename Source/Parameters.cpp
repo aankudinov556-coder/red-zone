@@ -55,16 +55,18 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     // ---- Global -----------------------------------------------------------
     addFloat (id::inGain, "Input Gain", linRange (-12.0f, 12.0f, 0.1f), 0.0f, "dB", 1);
 
-    // ---- EQ ---------------------------------------------------------------
+    // ---- EQ (8 slots; bands are created / removed on the graph via eqN_on) ----
     addBool (id::eqBypass, "EQ Bypass", false);
-    const float eqDefFreq[numEqBands] = { 40.0f, 150.0f, 500.0f, 1500.0f, 5000.0f, 12000.0f };
-    const float eqDefQ[numEqBands]    = { 0.71f, 1.0f, 1.0f, 1.0f, 1.0f, 0.71f };
+    const float eqDefFreq[numEqBands] = { 60.0f, 150.0f, 400.0f, 1000.0f, 2500.0f, 5000.0f, 9000.0f, 14000.0f };
     for (int b = 1; b <= numEqBands; ++b)
     {
         const auto n = String (b);
+        addBool (id::eqOn (b), "EQ " + n + " On", false);
+        params.push_back (std::make_unique<AudioParameterChoice> (ParameterID { id::eqType (b), 1 }, "EQ " + n + " Type", eqTypeNames(), eqBell));
         addFreq (id::eqFreq (b), "EQ " + n + " Freq", 20.0f, 20000.0f, eqDefFreq[b - 1]);
         addFloat (id::eqGain (b), "EQ " + n + " Gain", linRange (-18.0f, 18.0f, 0.1f), 0.0f, "dB", 1);
-        addFloat (id::eqQ (b), "EQ " + n + " Q", logRange (0.3f, 8.0f), eqDefQ[b - 1], "", 2);
+        addFloat (id::eqQ (b), "EQ " + n + " Q", logRange (0.1f, 18.0f), 1.0f, "", 2);
+        params.push_back (std::make_unique<AudioParameterChoice> (ParameterID { id::eqSlope (b), 1 }, "EQ " + n + " Slope", eqSlopeNames(), 1));
     }
 
     // ---- Multiband compressor --------------------------------------------
@@ -87,7 +89,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     addBool (id::imgBypass, "Imager Bypass", false);
     addFreq (id::imgX1, "Imager Crossover 1", 50.0f, 1000.0f, 250.0f);
     addFreq (id::imgX2, "Imager Crossover 2", 1000.0f, 12000.0f, 4000.0f);
-    addBool (id::imgMonoLow, "Mono Low Band", false);
+    {
+        auto attrs = AudioParameterFloatAttributes()
+                         .withLabel ("Hz")
+                         .withStringFromValueFunction ([] (float v, int) { return v < 20.0f ? String ("Off") : String (v, 0) + " Hz"; })
+                         .withValueFromStringFunction ([] (const String& t) { return t.containsIgnoreCase ("off") ? 0.0f : t.getFloatValue(); });
+        params.push_back (std::make_unique<AudioParameterFloat> (ParameterID { id::imgMonoFreq, 1 }, "Bass Mono", linRange (0.0f, 300.0f, 1.0f), 0.0f, attrs));
+    }
+    addBool (id::imgAutoGain, "Imager Auto Gain", true);
     for (int b = 1; b <= 3; ++b)
         addFloat (id::imgWidth (b), "Width " + String (b), linRange (0.0f, 200.0f, 1.0f), 100.0f, "%", 0);
 

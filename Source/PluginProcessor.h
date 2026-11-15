@@ -45,6 +45,7 @@ public:
     // Read by the UI.
     rz::LoudnessMeter loudness;
     rz::SpectrumBuffer spectrum;
+    rz::ScopeBuffer scope;
     rz::Maximizer maximizer;
     rz::MultibandCompressor multiband;
 
@@ -103,9 +104,9 @@ private:
     struct Ptrs
     {
         using P = std::atomic<float>*;
-        P inGain {}, eqBypass {}, mbBypass {}, mbX1 {}, mbX2 {}, imgBypass {}, imgX1 {}, imgX2 {}, imgMono {},
+        P inGain {}, eqBypass {}, mbBypass {}, mbX1 {}, mbX2 {}, imgBypass {}, imgX1 {}, imgX2 {}, imgMono {}, imgAuto {},
           maxBypass {}, maxDrive {}, maxCeiling {}, maxRel {};
-        std::array<P, rz::numEqBands> eqFreq {}, eqGain {}, eqQ {};
+        std::array<P, rz::numEqBands> eqFreq {}, eqGain {}, eqQ {}, eqOn {}, eqType {}, eqSlope {};
         std::array<P, rz::numMbBands> mbThresh {}, mbRatio {}, mbAtt {}, mbRel {}, mbGain {};
         std::array<P, 3> imgW {};
     } ptrs;

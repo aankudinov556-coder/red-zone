@@ -78,6 +78,10 @@ public:
         g.drawText (b.getButtonText(), r, juce::Justification::centred);
     }
 
-    juce::Font getLabelFont (juce::Label&) override { return juce::Font (12.0f); }
+    // Default labels use a compact 12 pt font; labels given a larger font explicitly keep it.
+    juce::Font getLabelFont (juce::Label& label) override
+    {
+        return label.getFont().getHeight() > 15.5f ? label.getFont() : juce::Font (12.0f);
+    }
 };
 } // namespace rz::ui

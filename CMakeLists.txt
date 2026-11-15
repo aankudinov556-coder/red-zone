@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 cmake_policy(SET CMP0091 NEW)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-project(Redzone VERSION 0.1.0 LANGUAGES C CXX)
+project(Redzone VERSION 0.2.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -44,6 +44,7 @@ target_compile_definitions(Redzone PUBLIC
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0
     JUCE_REPORT_APP_USAGE=0
+    JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_STRICT_REFCOUNTEDPOINTER=1)
 
 target_link_libraries(Redzone

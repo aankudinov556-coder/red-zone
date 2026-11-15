@@ -16,7 +16,8 @@ RedzoneAudioProcessor::RedzoneAudioProcessor()
     ptrs.imgBypass = P (rz::id::imgBypass);
     ptrs.imgX1 = P (rz::id::imgX1);
     ptrs.imgX2 = P (rz::id::imgX2);
-    ptrs.imgMono = P (rz::id::imgMonoLow);
+    ptrs.imgMono = P (rz::id::imgMonoFreq);
+    ptrs.imgAuto = P (rz::id::imgAutoGain);
     ptrs.maxBypass = P (rz::id::maxBypass);
     ptrs.maxDrive = P (rz::id::maxDrive);
     ptrs.maxCeiling = P (rz::id::maxCeiling);
@@ -26,6 +27,9 @@ RedzoneAudioProcessor::RedzoneAudioProcessor()
         ptrs.eqFreq[(size_t) b] = P (rz::id::eqFreq (b + 1));
         ptrs.eqGain[(size_t) b] = P (rz::id::eqGain (b + 1));
         ptrs.eqQ[(size_t) b] = P (rz::id::eqQ (b + 1));
+        ptrs.eqOn[(size_t) b] = P (rz::id::eqOn (b + 1));
+        ptrs.eqType[(size_t) b] = P (rz::id::eqType (b + 1));
+        ptrs.eqSlope[(size_t) b] = P (rz::id::eqSlope (b + 1));
     }
     for (int b = 0; b < rz::numMbBands; ++b)
     {
@@ -92,7 +96,16 @@ void RedzoneAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
 
     // ---- EQ ----------------------------------------------------------------
     for (int b = 0; b < rz::numEqBands; ++b)
-        eq.setBand (b, { ptrs.eqFreq[(size_t) b]->load(), ptrs.eqGain[(size_t) b]->load(), ptrs.eqQ[(size_t) b]->load() });
+    {
+        rz::ParametricEq::BandParams bp;
+        bp.on = ptrs.eqOn[(size_t) b]->load() > 0.5f;
+        bp.type = (int) std::lround (ptrs.eqType[(size_t) b]->load());
+        bp.freq = ptrs.eqFreq[(size_t) b]->load();
+        bp.gainDb = ptrs.eqGain[(size_t) b]->load();
+        bp.q = ptrs.eqQ[(size_t) b]->load();
+        bp.slope = (int) std::lround (ptrs.eqSlope[(size_t) b]->load());
+        eq.setBand (b, bp);
+    }
     eqFader.run (buffer, ptrs.eqBypass->load() > 0.5f, [this] (juce::AudioBuffer<float>& b) { eq.process (b); });
 
     // ---- Multiband compressor -----------------------------------------------
@@ -120,7 +133,8 @@ void RedzoneAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
         p.xover2 = ptrs.imgX2->load();
         for (int b = 0; b < 3; ++b)
             p.width[(size_t) b] = ptrs.imgW[(size_t) b]->load() * 0.01f;
-        p.monoLow = ptrs.imgMono->load() > 0.5f;
+        p.monoFreq = ptrs.imgMono->load();
+        p.autoGain = ptrs.imgAuto->load() > 0.5f;
         imager.setParams (p);
         imgFader.run (buffer, ptrs.imgBypass->load() > 0.5f, [this] (juce::AudioBuffer<float>& b) { imager.process (b); });
     }
@@ -133,6 +147,7 @@ void RedzoneAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce
     // ---- Metering ----------------------------------------------------------
     loudness.process (buffer.getReadPointer (0), buffer.getReadPointer (1), n);
     spectrum.push (buffer.getReadPointer (0), buffer.getReadPointer (1), n);
+    scope.push (buffer.getReadPointer (0), buffer.getReadPointer (1), n);
 }
 
 juce::AudioProcessorEditor* RedzoneAudioProcessor::createEditor()

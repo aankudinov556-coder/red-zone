@@ -45,6 +45,30 @@ struct BiquadCoeffs
                           (A + 1) - (A - 1) * c - t);
     }
 
+    static BiquadCoeffs lowPass (double sr, double f, double q)
+    {
+        const auto p = prepare (sr, f, 0.0, q);
+        const double alpha = p.sinW / (2.0 * p.q);
+        const double c = p.cosW;
+        return normalise ((1.0 - c) * 0.5, 1.0 - c, (1.0 - c) * 0.5, 1.0 + alpha, -2.0 * c, 1.0 - alpha);
+    }
+
+    static BiquadCoeffs highPass (double sr, double f, double q)
+    {
+        const auto p = prepare (sr, f, 0.0, q);
+        const double alpha = p.sinW / (2.0 * p.q);
+        const double c = p.cosW;
+        return normalise ((1.0 + c) * 0.5, -(1.0 + c), (1.0 + c) * 0.5, 1.0 + alpha, -2.0 * c, 1.0 - alpha);
+    }
+
+    static BiquadCoeffs notch (double sr, double f, double q)
+    {
+        const auto p = prepare (sr, f, 0.0, q);
+        const double alpha = p.sinW / (2.0 * p.q);
+        const double c = p.cosW;
+        return normalise (1.0, -2.0 * c, 1.0, 1.0 + alpha, -2.0 * c, 1.0 - alpha);
+    }
+
     // Magnitude response in dB at frequency f.
     double magnitudeDb (double f, double sr) const
     {

@@ -61,7 +61,7 @@ jobs:
         shell: pwsh
         run: |
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-          & $iscc "/DAppVersion=0.1.${{ github.run_number }}" "/DBuildDir=..\build" installer\redzone.iss
+          & $iscc "/DAppVersion=0.2.${{ github.run_number }}" "/DBuildDir=..\build" installer\redzone.iss
           if ($LASTEXITCODE -ne 0) { throw "ISCC failed" }
 
       - name: Zip VST3 (manual install)

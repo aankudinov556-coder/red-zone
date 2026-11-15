@@ -4,7 +4,9 @@
 #include "ui/MeterPanel.h"
 #include "ui/ParamPanel.h"
 #include "ui/RedzoneLookAndFeel.h"
-#include "ui/SpectrumComponent.h"
+#include "ui/EqBandPanel.h"
+#include "ui/EqGraph.h"
+#include "ui/ImagerTab.h"
 
 class RedzoneAudioProcessorEditor : public juce::AudioProcessorEditor
 {
@@ -19,7 +21,8 @@ private:
     RedzoneAudioProcessor& processor;
     rz::ui::RedzoneLookAndFeel lookAndFeel;
 
-    rz::ui::SpectrumComponent spectrum;
+    rz::ui::EqGraph eqGraph;
+    rz::ui::EqBandPanel* eqBandPanel = nullptr; // owned by tabs
     rz::ui::MeterPanel meters;
     juce::TabbedComponent tabs { juce::TabbedButtonBar::TabsAtTop };
 
